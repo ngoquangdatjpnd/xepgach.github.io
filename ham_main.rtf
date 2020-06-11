@@ -1,0 +1,418 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset163 Calibri;}{\f2\fnil\fcharset238 Calibri;}}
+{\*\generator Riched20 10.0.15063}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 ham main\par
+#include <cstdio>\par
+#include<conio.h>\par
+#include <cstdlib>\par
+#include "support2.h"\par
+#include <ctime>\par
+#include<string>\par
+\par
+#define LEFT 4\par
+#define TOP 4\par
+#define MaxI 22\par
+#define MaxJ 10\par
+int Board[MaxI][MaxJ];\par
+using namespace std;\par
+void DrawBoard()\par
+\{\par
+\tab int i,j;\par
+\tab for(i=LEFT;i<=LEFT+10+1;i++)\par
+\tab\tab for(j=TOP;j<=TOP+18+1;j++)\par
+\tab\tab\{\par
+\tab\tab\tab if((j==TOP||j==TOP+18+1)&&i>LEFT&&i<LEFT+10+1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab gotoxy(i,j);textcolor(7);cout<<"*";\par
+\tab\tab\tab\}\par
+\tab\tab\tab if((i==LEFT||i==LEFT+10+1)&&j>TOP&&j<TOP+18+1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab gotoxy(i,j);textcolor(7);cout<<"*";\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\tab\tab gotoxy(LEFT,TOP);textcolor(LIGHTRED);cout<<"@";\par
+\tab\tab gotoxy(LEFT+10+1,TOP);textcolor(LIGHTRED);cout<<"@";\par
+\tab\tab gotoxy(LEFT,TOP+18+1);textcolor(LIGHTRED);cout<<"@";\par
+\tab\tab gotoxy(LEFT+10+1,TOP+18+1);textcolor(LIGHTRED);cout<<"@";\par
+\par
+\}\par
+\par
+\par
+void DisplayBoard()\par
+\{\par
+\tab int i,j;\par
+\tab for(i=0;i<MaxI;i++)\par
+\tab\tab for(j=0;j<MaxJ;j++)\par
+\tab\tab\{\par
+\tab\tab\tab if(Board[i][j]==1&&i>=4)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab gotoxy(j+LEFT+1,i+TOP+1-4);textcolor(15);cout<<"1";\par
+\tab\tab\tab\}\par
+\tab\tab\tab if(Board[i][j]==0&&i>=4)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab textcolor(BLACK);gotoxy(j+LEFT+1,i+TOP+1-4);cout<<" ";\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\}\par
+void CapNhatLaiToaDo(int hang)\par
+\{\par
+\tab int i,j;\par
+\tab for(i=hang;i>0;i--)\par
+\tab\tab for(j=0;j<MaxJ;j++)\par
+\tab\tab\{\par
+\tab\tab\tab Board[i][j]=Board[i-1][j];\par
+\tab\tab\}\par
+\}\par
+typedef struct\par
+\{\par
+\tab int score;\par
+\tab int level;\par
+\tab float speed;\par
+\}INFO;\par
+void InitGame(INFO *info)\par
+\{\par
+\tab info->level=1;\par
+\tab info->score=0;\par
+\tab info->speed=0.3;\par
+\}\par
+int CapNhat(INFO *info, int score)\par
+\{\par
+\tab info->score+=score;\par
+\tab if(info->score>=200&&info->level<2)\par
+\tab\{\par
+\tab\tab info->level++;\par
+\tab\tab info->speed-=0.1;\par
+\tab\}\par
+\tab return 0; //Chua win game.\par
+\}\par
+void VeBangDiem(INFO info)\par
+\{\par
+\tab textcolor(LIGHTYELLOW);\par
+\tab gotoxy(LEFT+MaxJ+2,10);cout<<"score: ";cout<<info.score;\par
+\tab gotoxy(LEFT+MaxJ+2,11);cout<<"level: ";cout<<info.level;\par
+\tab gotoxy(LEFT+MaxJ+2,12);cout<<"speed: ";cout<<info.speed;\par
+\}\par
+typedef struct\par
+\{\par
+\tab int **arr;\par
+\tab int Row,Col;\par
+\tab int iBoard,jBoard;\par
+\}KhoiGach;\par
+\par
+KhoiGach *TaoKhoiGach(int ID)\par
+\{\par
+\tab KhoiGach *pkhoigach=(KhoiGach*)malloc(sizeof(KhoiGach));\par
+\tab switch(ID)\par
+\tab\{\par
+\tab\tab case 15:\par
+\tab\tab\tab pkhoigach->Row=4;\par
+\tab\tab\tab pkhoigach->Col=1;\par
+\tab\tab\tab pkhoigach->iBoard=0;\par
+\tab\tab\tab pkhoigach->jBoard=5;\par
+\tab\tab\tab break;\par
+\tab\tab case 31:\par
+\tab\tab\tab pkhoigach->Row=pkhoigach->Col=2;\par
+\tab\tab\tab pkhoigach->iBoard=2;\par
+\tab\tab\tab pkhoigach->jBoard=5;\par
+\tab\tab\tab break;\par
+\tab\tab default:\par
+\tab\tab\tab pkhoigach->Row=2;\par
+\tab\tab\tab pkhoigach->Col=3;\par
+\tab\tab\tab pkhoigach->iBoard=2;\par
+\tab\tab\tab pkhoigach->jBoard=5;\par
+\tab\tab\tab break;\par
+\tab\}\par
+\tab pkhoigach->arr=(int**)malloc(pkhoigach->Row*sizeof(int*));\par
+\tab for(int i=0;i<pkhoigach->Row;i++)\par
+\tab\{\par
+\tab\tab pkhoigach->arr[i]=(int*)malloc(pkhoigach->Col*sizeof(int));\par
+\tab\}\par
+\tab for(int k=0;k<pkhoigach->Col*pkhoigach->Row;k++)\par
+\tab\{\par
+\tab\tab pkhoigach->arr[k/pkhoigach->Col][k%pkhoigach->Col]=(ID>>(pkhoigach->Col*pkhoigach->Row-1-k))&1;\par
+\tab\}\par
+\tab return pkhoigach;\par
+\}\par
+int Inside(int i,int j)\par
+\{\par
+\tab return (i>=0&&i<MaxI&&j>=0&&j<MaxJ);\par
+\}\par
+int Left(int i,int j)\par
+\{\par
+\tab if(j>0&&Inside(i,j)&&Board[i][j-1]==0) return 1;\par
+\tab return 0;\par
+\}\par
+int Right(int i,int j)\par
+\{\par
+\tab if(j<MaxJ-1&&Inside(i,j)&&Board[i][j+1]==0) return 1;\par
+\tab return 0;\par
+\}\par
+int Down(int i,int j)\par
+\{\par
+\tab if(i<MaxI-1&&Inside(i,j)&&Board[i+1][j]==0) return 1;\par
+\tab return 0;\par
+\}\par
+void SangTrai(KhoiGach *pkhoigach)\par
+\{\par
+\tab for(int i=0;i<pkhoigach->Row;i++)\par
+\tab\tab for(int j=0;j<pkhoigach->Col;j++)\par
+\tab\tab\tab if(pkhoigach->arr[i][j]==1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab if(Left(pkhoigach->iBoard+i,pkhoigach->jBoard+j)==0||pkhoigach->iBoard<=3) return;\par
+\tab\tab\tab\}\par
+\par
+\tab pkhoigach->jBoard-=1; //Dich vi tri cua bang trang thai sang trai 1 so voi Board[22][10].\par
+\}\par
+void SangPhai(KhoiGach *pkhoigach)\par
+\{\par
+\tab for(int i=0;i<pkhoigach->Row;i++)\par
+\tab\tab for(int j=0;j<pkhoigach->Col;j++)\par
+\tab\tab\tab if(pkhoigach->arr[i][j]==1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab if(Right(pkhoigach->iBoard+i,pkhoigach->jBoard+j)==0||pkhoigach->iBoard<=3) return;\par
+\tab\tab\tab\}\par
+\par
+\tab\tab\tab pkhoigach->jBoard+=1; //Dich vi tri cua bang trang thai sang trai 1 so voi Board[22][10].\par
+\}\par
+int RoiXuong(KhoiGach *pkhoigach)\par
+\{\par
+\tab for(int i=0;i<pkhoigach->Row;i++)\par
+\tab\tab for(int j=0;j<pkhoigach->Col;j++)\par
+\tab\tab\tab if(pkhoigach->arr[i][j]==1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab if(Down(pkhoigach->iBoard+i,pkhoigach->jBoard+j)==0) return 0;\par
+\tab\tab\tab\}\par
+\tab pkhoigach->iBoard+=1; //Roi xuong 1 so voi Board[22][10]\par
+\tab return 1;\par
+\}\par
+void GanGiaTri(KhoiGach* pkhoigach)\par
+\{\par
+\tab for(int i=0;i<pkhoigach->Row;i++)\par
+\tab\tab for(int j=0;j<pkhoigach->Col;j++)\par
+\tab\tab\tab if(pkhoigach->arr[i][j]==1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab Board[pkhoigach->iBoard+i][pkhoigach->jBoard+j]=1;\par
+\tab\tab\tab\}\par
+\}\par
+void XoayKhoiGach(KhoiGach* pkhoigach)\par
+\{\par
+\tab int i,j;\par
+\tab int ** tmpArr;\par
+\tab int tmpRow=pkhoigach->Col;\par
+\tab int tmpCol=pkhoigach->Row;\par
+\tab //C\f1\lang1066\u7845?p ph\f0\lang1033\'e1t b\f1\lang1066\u7897? nh\u7899? cho ma tr\u7853?n ph\u7909? tmpArr.\par
+\tab tmpArr=(int**)malloc(tmpRow*sizeof(int*));\par
+\tab for( i=0;i<tmpRow;i++)\par
+\tab\{\par
+\tab\tab tmpArr[i]=(int*)malloc(tmpCol*sizeof(int));\par
+\tab\}\par
+\tab ///////////////////////////////////////////////\par
+\tab for(i=pkhoigach->Row-1;i>=0;i--)\par
+\tab\tab for(j=pkhoigach->Col-1;j>=0;j--)\par
+\tab\tab\{\par
+\tab\tab\tab tmpArr[j][pkhoigach->Row-i-1]=pkhoigach->arr[i][j];\par
+\tab\tab\}\par
+\tab //Ki\u7875?m tra h\u7907?p l\u7879?.\par
+\tab\tab for (i=0;i<tmpRow;i++)\par
+\tab\tab\{\par
+\tab\tab\tab for(j=0;j<tmpCol;j++)\par
+\tab\tab\tab\tab if(!Inside(pkhoigach->iBoard+i,pkhoigach->jBoard+j)||Board[pkhoigach->iBoard+i][pkhoigach->jBoard+j]==1)\par
+\tab\tab\tab\tab\tab return;\par
+\tab\tab\}\par
+\tab for(i=0;i<pkhoigach->Row;i++) free(pkhoigach->arr[i]);\par
+\tab free(pkhoigach->arr);\par
+\tab //C\u7853?p nh\u7853?t thay \f2\'f0\f1\u7893?i sau khi xoay.\par
+\tab pkhoigach->Col=tmpCol;\par
+\tab pkhoigach->Row=tmpRow;\par
+\tab pkhoigach->arr=tmpArr;\par
+\par
+\}\par
+void HuyKhoiGach(KhoiGach* pkhoigach)\par
+\{\par
+\tab int i;\par
+\tab //Huy bo nho cua ma tran trang thai arr.\par
+\tab for(i=0;i<pkhoigach->Row;i++) free(pkhoigach->arr[i]);\par
+\tab free(pkhoigach->arr);\par
+\tab /////////////////////////////////////////////////////////\par
+\tab //Sau do moi free(pkhoigach)\par
+\tab free(pkhoigach);\par
+\tab pkhoigach=NULL;\par
+\}\par
+int KiemTra(KhoiGach *pkhoigach,INFO *infogame) //-1 : gameover 0: win\par
+\{\par
+\tab\tab int i,j,count;\par
+\tab\tab i=pkhoigach->Row-1;\par
+\tab\tab if(pkhoigach->iBoard<=3) return -1;//Gameover\par
+\tab\tab if(infogame->score>=300) return 0;//Win\par
+\tab\tab do\par
+\tab\tab\{\par
+\tab\tab\tab count=0;\par
+\tab\tab\tab for(j=0;j<MaxJ;j++)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab if(Board[pkhoigach->iBoard+i][j]==1)\tab count++;\par
+\tab\tab\tab\}\par
+\tab\tab\tab if(count==MaxJ)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab CapNhat(infogame,20);\par
+\tab\tab\tab\tab CapNhatLaiToaDo(pkhoigach->iBoard+i);\par
+\tab\tab\tab\tab DisplayBoard();\par
+\tab\tab\tab\}\par
+\tab\tab\tab else\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab i=i-1;\par
+\tab\tab\tab\}\par
+\tab\tab\}while(i>=0);\par
+\tab\tab return 1;\par
+\}\par
+void VeKhoiGach(KhoiGach* pkhoigach)\par
+\{\par
+\tab int i;\par
+\tab int j;\par
+\tab for(i=0;i<pkhoigach->Row;i++)\par
+\tab\tab for(j=0;j<pkhoigach->Col;j++)\par
+\tab\tab\tab if(pkhoigach->arr[i][j]==1&&(pkhoigach->iBoard+i)>3)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab textcolor(LIGHTRED);\par
+\tab\tab\tab\tab gotoxy(LEFT+pkhoigach->jBoard+j+1,TOP+pkhoigach->iBoard+i-3);\par
+\tab\tab\tab\tab cout<<"1";;\par
+\tab\tab\tab\}\par
+\}\par
+void XoaKhoiGach(KhoiGach *pkhoigach)\par
+\{\par
+\tab int i;\par
+\tab int j;\par
+\tab for(i=0;i<pkhoigach->Row;i++)\par
+\tab\tab for(j=0;j<pkhoigach->Col;j++)\par
+\tab\tab\tab if(pkhoigach->arr[i][j]==1&&(pkhoigach->iBoard+i)>3)\par
+\tab\tab\tab\{\par
+\par
+\tab\tab\tab\tab textcolor(BLACK);\par
+\tab\tab\tab\tab gotoxy(LEFT+pkhoigach->jBoard+j+1,TOP+pkhoigach->iBoard+i-3);\par
+\tab\tab\tab\tab cout<<" ";\par
+\tab\tab\tab\}\par
+\}\par
+void Ve_Next(int ID)\par
+\{\par
+\tab KhoiGach *pnext=TaoKhoiGach(ID);\par
+\tab int iRoot=LEFT+MaxJ+5;\par
+\tab int jRoot=TOP;\par
+\tab for(int i=0;i<pnext->Row;i++)\par
+\tab\{\par
+\tab\tab for (int j=0;j<pnext->Col;j++)\par
+\tab\tab\{\par
+\tab\tab\tab if(pnext->arr[i][j]==1)\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab textcolor(LIGHTGREEN);\par
+\tab\tab\tab\tab gotoxy(iRoot+j,jRoot+i);cout<<"1";\par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\par
+\tab\}\par
+\tab HuyKhoiGach(pnext);\par
+\}\par
+void Xoa_Next()\par
+\{\par
+\tab int iRoot=LEFT+MaxJ+5;\par
+\tab int jRoot=TOP;\par
+\tab for(int i=0;i<4;i++)\par
+\tab\{\par
+\tab\tab for (int j=0;j<4;j++)\par
+\tab\tab\{\par
+\par
+\tab\tab\tab\tab textcolor(BLACK);\par
+\tab\tab\tab\tab gotoxy(iRoot+j,jRoot+i);cout<<"1";\par
+\tab\tab\}\par
+\par
+\tab\}\par
+\}\par
+int Loai()\par
+\{\par
+    int x=rand()%7;\par
+\tab switch(x)\par
+\tab\{\par
+\tab case 0:\par
+\tab\tab return 15;\par
+\tab\tab break;\par
+\tab case 1:\par
+\tab\tab return 31;\par
+\tab\tab break;\par
+\tab case 2:\par
+\tab\tab return 51;\par
+\tab\tab break;\par
+\tab case 3:\par
+\tab\tab return 30;\par
+\tab\tab break;\par
+\tab case 4:\par
+\tab\tab return 58;\par
+\tab\tab break;\par
+\tab case 5:\par
+\tab\tab return 57;\par
+\tab\tab break;\par
+\tab case 6:\par
+\tab\tab return 60;\par
+\tab\tab break;\par
+\tab\}\par
+\}\par
+int main(int argc,char*argv[])\par
+\{\par
+\tab int IDKhoiTiepTheo;\par
+\tab clock_t Start,End;\par
+\tab char c;\par
+\tab INFO info;\par
+\tab KhoiGach *currKhoi;\par
+\tab srand(time(0));\par
+\tab currKhoi=TaoKhoiGach(Loai()); IDKhoiTiepTheo=Loai();\par
+\tab DrawBoard();\par
+\tab InitGame(&info);\par
+\tab Nocursortype();\par
+\tab do\par
+\tab\{\par
+\tab\tab VeBangDiem(info);\par
+\tab\tab VeKhoiGach(currKhoi);\par
+\tab\tab Xoa_Next();\par
+\tab\tab Ve_Next(IDKhoiTiepTheo);\par
+\tab\tab Start=clock();\par
+\tab\tab do\par
+\tab\tab\{\par
+\par
+\tab\tab\tab if(_kbhit())\par
+\tab\tab\tab\{\par
+\tab\tab\tab\tab c=toupper(getch());\par
+\tab\tab\tab\tab XoaKhoiGach(currKhoi);\par
+\tab\tab\tab\tab switch(c)\par
+\tab\tab\tab\tab\{\par
+\tab\tab\tab\tab case 'W':\par
+\tab\tab\tab\tab\tab XoayKhoiGach(currKhoi);\par
+\tab\tab\tab\tab\tab break;\par
+\tab\tab\tab\tab case 'A':\par
+\tab\tab\tab\tab\tab SangTrai(currKhoi);\par
+\tab\tab\tab\tab\tab break;\par
+\tab\tab\tab\tab case 'D':\par
+\tab\tab\tab\tab\tab SangPhai(currKhoi);\par
+\tab\tab\tab\tab\tab break;\par
+\tab\tab\tab\tab case 'S':\par
+\tab\tab\tab\tab\tab RoiXuong(currKhoi);\par
+\tab\tab\tab\tab\tab break;\par
+\tab\tab\tab\tab\}\par
+\tab\tab\tab\tab VeKhoiGach(currKhoi);\par
+\tab\tab\tab\}\par
+\tab\tab\tab End=clock();\par
+\tab\tab\}while(float(End-Start)/CLK_TCK<info.speed);\par
+\tab\tab XoaKhoiGach(currKhoi);\par
+\tab\tab if(RoiXuong(currKhoi)==0) //ko di chuyen xuong dc\par
+\tab\tab\{\par
+\tab\tab\tab GanGiaTri(currKhoi);\par
+\tab\tab\tab int ketqua=KiemTra(currKhoi,&info);\par
+\tab\tab\tab if((ketqua==-1||ketqua==0)) break;\par
+\tab\tab\tab HuyKhoiGach(currKhoi); //Giai phong bo nho.\par
+\tab\tab\tab currKhoi=TaoKhoiGach(IDKhoiTiepTheo);\par
+\tab\tab\tab IDKhoiTiepTheo=Loai();\par
+\par
+\tab\tab\}\par
+\tab\tab DisplayBoard();\par
+\tab\}while(1);\par
+\tab textcolor(LIGHTGREEN);gotoxy(35,20);cout<<"End Game.Press anykey to exit.";\par
+\tab _getch();\par
+\tab return 0;\par
+\}\f0\lang9\par
+}
+ 
